@@ -1,0 +1,29 @@
+[
+  {
+    "marker_id": "marker-0",
+    "data_source": "config.json",
+    "field": "name",
+    "path": "project"
+  },
+  {
+    "marker_id": "marker-1",
+    "data_source": "config.json",
+    "field": "author",
+    "path": "settings"
+  },
+  {
+    "marker_id": "marker-2",
+    "data_source": "config.json",
+    "field": "date",
+    "path": "project"
+  },
+  {
+    "marker_id": "table-0",
+    "data_source": "quarterly_metrics.xlsx",
+    "sheet": "Revenue"
+  },
+  {
+    "marker_id": "table-1",
+    "data_source": "project_status.csv"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "project": {
+    "name": "DocForge Demo",
+    "date": "2026-03-03",
+    "version": "1.0"
+  },
+  "settings": {
+    "author": "Test Author",
+    "department": "Engineering"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "project": {
+    "name": "Acme Corp Q4 Report",
+    "date": "2025-12-31",
+    "version": "1.0"
+  },
+  "settings": {
+    "author": "Jane Doe",
+    "department": "Finance"
+  }
+}
