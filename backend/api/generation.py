@@ -2,13 +2,17 @@ import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, Request
-from fastapi.responses import FileResponse
 
 from api.errors import DocForgeError
-from api.schemas import GenerateRequest
+from api.schemas import (
+    GenerateRequest,
+    GenerateResponse,
+    GenerationReportResponse,
+    ValidationIssueResponse,
+)
 from core.engine import GenerationEngine
-from core.models import MappingEntry
-from db.models import Project
+from core.models import ConditionalConfig, MappingEntry, TransformConfig, TransformType
+from db.models import GenerationRun, Project
 
 router = APIRouter(tags=["generation"])
 
@@ -18,7 +22,7 @@ async def generate_document(
     project_id: int,
     body: GenerateRequest,
     request: Request,
-) -> FileResponse:
+) -> GenerateResponse:
     settings = request.app.state.settings
     session_factory = request.app.state.db
 
@@ -57,9 +61,30 @@ async def generate_document(
             field=m.field,
             sheet=m.sheet,
             path=m.path,
+            transforms=[
+                TransformConfig(type=TransformType(t.type), params=t.params) for t in m.transforms
+            ],
         )
         for m in body.mappings
     ]
+
+    # Convert conditionals
+    conditionals = (
+        [
+            ConditionalConfig(
+                section_id=c.section_id,
+                condition_type=c.condition_type,
+                data_source=c.data_source,
+                field=c.field,
+                operator=c.operator,
+                value=c.value,
+                include=c.include,
+            )
+            for c in body.conditionals
+        ]
+        if body.conditionals
+        else None
+    )
 
     # Generate
     output_dir = settings.output_dir / str(project_id)
@@ -67,10 +92,36 @@ async def generate_document(
     output_path = output_dir / f"output_{uuid.uuid4().hex[:8]}.docx"
 
     engine = GenerationEngine()
-    engine.generate(template_path, data_paths, mappings, output_path)
+    report = engine.generate(template_path, data_paths, mappings, output_path, conditionals)
 
-    return FileResponse(
-        path=str(output_path),
-        filename=output_path.name,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    # Record generation run in database
+    with session_factory() as session:
+        run = GenerationRun(
+            project_id=project_id,
+            mapping_snapshot=[m.model_dump(mode="json") for m in body.mappings],
+            output_path=str(output_path),
+            report=report.model_dump(mode="json"),
+            status="completed",
+        )
+        session.add(run)
+        session.commit()
+        session.refresh(run)
+        run_id = run.id
+
+    return GenerateResponse(
+        run_id=run_id,
+        download_url=f"/api/v1/projects/{project_id}/generations/{run_id}/download",
+        report=GenerationReportResponse(
+            total_markers=report.total_markers,
+            rendered=report.rendered,
+            skipped=report.skipped,
+            warnings=[
+                ValidationIssueResponse(level=w.level, marker_id=w.marker_id, message=w.message)
+                for w in report.warnings
+            ],
+            errors=[
+                ValidationIssueResponse(level=e.level, marker_id=e.marker_id, message=e.message)
+                for e in report.errors
+            ],
+        ),
     )

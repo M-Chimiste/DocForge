@@ -91,8 +91,12 @@ async def test_generate_document(api_client, project_with_template, data_dir):
         },
     )
     assert resp.status_code == 200
-    assert resp.headers["content-type"].startswith("application/vnd.openxmlformats-officedocument")
-    assert len(resp.content) > 0
+    data = resp.json()
+    assert "runId" in data
+    assert "downloadUrl" in data
+    assert "report" in data
+    assert data["report"]["rendered"] >= 1
+    assert isinstance(data["report"]["totalMarkers"], int)
 
 
 @pytest.mark.asyncio

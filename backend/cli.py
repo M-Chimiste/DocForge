@@ -47,20 +47,21 @@ def generate(template: str, data: tuple, mapping: str, output: str):
         mapping_data = json.load(f)
     mappings = [MappingEntry(**m) for m in mapping_data]
 
-    results = engine.generate(
+    report = engine.generate(
         Path(template),
         [Path(d) for d in data],
         mappings,
         Path(output),
     )
 
-    click.echo(
-        f"Generation complete. "
-        f"{sum(1 for r in results if r.success)}/{len(results)} markers rendered."
-    )
-    for r in results:
+    click.echo(f"Generation complete. {report.rendered}/{report.total_markers} markers rendered.")
+    for r in report.results:
         status = "OK" if r.success else f"FAIL: {r.error}"
         click.echo(f"  {r.marker_id}: {status}")
+    if report.warnings:
+        click.echo(f"  {len(report.warnings)} warning(s)")
+    if report.errors:
+        click.echo(f"  {len(report.errors)} error(s)")
 
 
 if __name__ == "__main__":

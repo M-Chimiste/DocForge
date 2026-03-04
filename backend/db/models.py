@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Column, DateTime, Integer, String
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import DeclarativeBase, relationship
 
 
 def _utcnow():
@@ -22,3 +22,21 @@ class Project(Base):
     mapping_config = Column(JSON, default=dict)
     created_at = Column(DateTime, default=_utcnow)
     updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow)
+
+    generation_runs = relationship(
+        "GenerationRun", back_populates="project", cascade="all, delete-orphan"
+    )
+
+
+class GenerationRun(Base):
+    __tablename__ = "generation_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    mapping_snapshot = Column(JSON, nullable=False)
+    output_path = Column(String, nullable=True)
+    report = Column(JSON, nullable=True)
+    status = Column(String, default="completed")
+    created_at = Column(DateTime, default=_utcnow)
+
+    project = relationship("Project", back_populates="generation_runs")

@@ -1,0 +1,6 @@
+project:
+  name: DocForge Demo
+  date: '2026-03-03'
+settings:
+  author: Test Author
+  theme: dark

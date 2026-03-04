@@ -8,8 +8,13 @@ import pandas as pd
 
 from extractors.base import ExtractedData, ExtractionConfig, ExtractorRegistry
 from extractors.csv_extractor import CsvExtractor
+from extractors.docx_extractor import DocxContentExtractor
 from extractors.excel_extractor import ExcelExtractor
 from extractors.json_extractor import JsonExtractor
+from extractors.pdf_extractor import PdfExtractor
+from extractors.pptx_extractor import PptxExtractor
+from extractors.text_extractor import TextExtractor
+from extractors.yaml_extractor import YamlExtractor
 
 
 def create_default_registry() -> ExtractorRegistry:
@@ -17,6 +22,11 @@ def create_default_registry() -> ExtractorRegistry:
     registry.register(ExcelExtractor())
     registry.register(CsvExtractor())
     registry.register(JsonExtractor())
+    registry.register(TextExtractor())
+    registry.register(YamlExtractor())
+    registry.register(DocxContentExtractor())
+    registry.register(PptxExtractor())
+    registry.register(PdfExtractor())
     return registry
 
 
@@ -51,6 +61,13 @@ class DataStore:
         if df is not None:
             return list(df.columns)
         return []
+
+    def get_text(self, source_name: str) -> str | None:
+        """Get raw text content for an unstructured data source."""
+        source = self._sources.get(source_name)
+        if source and source.text_content:
+            return source.text_content
+        return None
 
 
 def load_data_sources(

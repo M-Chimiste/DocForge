@@ -1,0 +1,7 @@
+Quarterly Performance Report
+
+The first quarter showed strong momentum across all business units. Revenue exceeded targets by 12%, driven primarily by new customer acquisitions in the enterprise segment. Operating margins improved to 18.5%, up from 16.2% in the prior quarter.
+
+The product team shipped three major releases during the quarter, including the long-awaited analytics dashboard and a revamped onboarding flow. Customer satisfaction scores rose to 4.6 out of 5, reflecting the positive reception of these updates.
+
+Looking ahead, the focus for Q2 will be on international expansion and deepening integrations with key partners. The hiring pipeline remains healthy, with 15 new positions approved for engineering and customer success teams.

@@ -60,7 +60,7 @@ export default function DataSourceUpload({
           <input
             type="file"
             hidden
-            accept=".xlsx,.xls,.csv,.tsv,.json"
+            accept=".xlsx,.xls,.csv,.tsv,.json,.yaml,.yml,.txt,.md,.docx,.pptx,.pdf"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleUpload(file);

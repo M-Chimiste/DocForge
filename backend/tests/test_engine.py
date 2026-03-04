@@ -38,7 +38,7 @@ class TestGenerate:
                 path="project",
             ),
         ]
-        results = engine.generate(
+        report = engine.generate(
             templates_dir / "simple_placeholder.docx",
             [data_dir / "config.json"],
             mappings,
@@ -46,7 +46,7 @@ class TestGenerate:
         )
         assert output.exists()
         # Check at least one succeeded
-        succeeded = [r for r in results if r.success]
+        succeeded = [r for r in report.results if r.success]
         assert len(succeeded) >= 1
 
         # Verify the text was actually substituted in the output document
@@ -82,7 +82,7 @@ class TestGenerate:
         """Markers without mappings should fail gracefully, not crash."""
         output = tmp_path / "output.docx"
         # Provide no mappings at all
-        results = engine.generate(
+        report = engine.generate(
             templates_dir / "simple_placeholder.docx",
             [data_dir / "config.json"],
             [],
@@ -90,7 +90,7 @@ class TestGenerate:
         )
         assert output.exists()
         # All markers should report failure
-        failed = [r for r in results if not r.success]
+        failed = [r for r in report.results if not r.success]
         assert len(failed) >= 1
         assert any("No mapping" in r.error for r in failed)
 
@@ -116,15 +116,15 @@ class TestGenerate:
                 sheet="Revenue",
             ),
         ]
-        results = engine.generate(
+        report = engine.generate(
             templates_dir / "mixed_markers.docx",
             [data_dir / "config.json", data_dir / "metrics.xlsx"],
             mappings,
             output,
         )
         assert output.exists()
-        # Some should succeed, LLM prompt should fail (no renderer)
-        succeeded = [r for r in results if r.success]
+        # Some should succeed, LLM prompt should fail (no mapping)
+        succeeded = [r for r in report.results if r.success]
         assert len(succeeded) >= 1
 
     def test_output_dir_created(self, engine, templates_dir, data_dir, tmp_path):

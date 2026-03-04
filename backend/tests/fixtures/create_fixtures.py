@@ -5,8 +5,11 @@ Run: conda run -n docforge python tests/fixtures/create_fixtures.py
 
 from pathlib import Path
 
+import yaml
 from docx import Document
 from docx.shared import RGBColor
+from pptx import Presentation
+from pptx.util import Inches, Pt
 
 FIXTURES_DIR = Path(__file__).parent
 TEMPLATES_DIR = FIXTURES_DIR / "templates"
@@ -162,10 +165,232 @@ def create_data_fixtures():
     print("Created config.json")
 
 
+def _create_raw_pdf(page_texts: list[str]) -> bytes:
+    """Create a minimal valid PDF with the given page texts (no external dependencies)."""
+    objects = []
+    obj_num = 1
+
+    # Catalog
+    catalog_num = obj_num
+    objects.append(f"{obj_num} 0 obj\n<< /Type /Catalog /Pages {obj_num + 1} 0 R >>\nendobj")
+    obj_num += 1
+
+    # Pages (parent)
+    pages_num = obj_num
+    kid_nums = []
+    obj_num += 1  # Reserve slot, fill later
+
+    # Font
+    font_num = obj_num
+    objects.append(
+        f"{obj_num} 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj"
+    )
+    obj_num += 1
+
+    # Create each page + contents
+    for text in page_texts:
+        page_num = obj_num
+        kid_nums.append(page_num)
+        content_num = obj_num + 1
+
+        stream = f"BT /F1 11 Tf 72 720 Td ({text}) Tj ET"
+        objects.append(
+            f"{page_num} 0 obj\n"
+            f"<< /Type /Page /Parent {pages_num} 0 R /MediaBox [0 0 612 792]\n"
+            f"   /Contents {content_num} 0 R "
+            f"/Resources << /Font << /F1 {font_num} 0 R >> >> >>\n"
+            f"endobj"
+        )
+        objects.append(
+            f"{content_num} 0 obj\n<< /Length {len(stream)} >>\nstream\n{stream}\nendstream\nendobj"
+        )
+        obj_num += 2
+
+    # Now insert the Pages object at position 1
+    kids_str = " ".join(f"{n} 0 R" for n in kid_nums)
+    pages_obj = (
+        f"{pages_num} 0 obj\n<< /Type /Pages /Kids [{kids_str}] /Count {len(page_texts)} >>\nendobj"
+    )
+    objects.insert(1, pages_obj)
+
+    # Build PDF
+    body = "\n".join(objects)
+    xref_offset = len(b"%PDF-1.4\n") + len(body.encode()) + 1
+    trailer = f"<< /Root {catalog_num} 0 R /Size {obj_num} >>"
+    pdf = (
+        f"%PDF-1.4\n{body}\nxref\n0 1\n0000000000 65535 f \n"
+        f"trailer\n{trailer}\nstartxref\n{xref_offset}\n%%EOF"
+    )
+    return pdf.encode()
+
+
+def create_phase2_data_fixtures():
+    """Create Phase 2 data fixtures: .txt, .yaml, .docx, .pptx, .pdf."""
+
+    # --- data/sample.txt ---
+    sample_text = (
+        "Quarterly Performance Report\n"
+        "\n"
+        "The first quarter showed strong momentum across all business units. "
+        "Revenue exceeded targets by 12%, driven primarily by new customer "
+        "acquisitions in the enterprise segment. Operating margins improved "
+        "to 18.5%, up from 16.2% in the prior quarter.\n"
+        "\n"
+        "The product team shipped three major releases during the quarter, "
+        "including the long-awaited analytics dashboard and a revamped "
+        "onboarding flow. Customer satisfaction scores rose to 4.6 out of 5, "
+        "reflecting the positive reception of these updates.\n"
+        "\n"
+        "Looking ahead, the focus for Q2 will be on international expansion "
+        "and deepening integrations with key partners. The hiring pipeline "
+        "remains healthy, with 15 new positions approved for engineering "
+        "and customer success teams.\n"
+    )
+    (DATA_DIR / "sample.txt").write_text(sample_text, encoding="utf-8")
+    print("Created data/sample.txt")
+
+    # --- data/config.yaml ---
+    config_yaml = {
+        "project": {
+            "name": "DocForge Demo",
+            "date": "2026-03-03",
+        },
+        "settings": {
+            "author": "Test Author",
+            "theme": "dark",
+        },
+    }
+    with open(DATA_DIR / "config.yaml", "w", encoding="utf-8") as f:
+        yaml.dump(config_yaml, f, default_flow_style=False, sort_keys=False)
+    print("Created data/config.yaml")
+
+    # --- data/source_doc.docx ---
+    doc = Document()
+    doc.add_paragraph(
+        "This document serves as a supplementary data source for document "
+        "generation. It contains contextual information about the project "
+        "team and their responsibilities."
+    )
+    doc.add_paragraph(
+        "The team has been restructured to align with the new strategic "
+        "priorities. Each department now has a dedicated liaison responsible "
+        "for cross-functional coordination."
+    )
+    doc.add_paragraph(
+        "The following table summarises the current team assignments and departmental affiliations."
+    )
+
+    table = doc.add_table(rows=3, cols=3)
+    table.style = "Table Grid"
+    # Header row
+    for idx, header in enumerate(["Name", "Role", "Department"]):
+        table.rows[0].cells[idx].text = header
+    # Data rows
+    data_rows = [
+        ("Alice Johnson", "Project Lead", "Engineering"),
+        ("Bob Smith", "Data Analyst", "Analytics"),
+    ]
+    for row_idx, row_data in enumerate(data_rows, start=1):
+        for col_idx, value in enumerate(row_data):
+            table.rows[row_idx].cells[col_idx].text = value
+
+    doc.save(str(DATA_DIR / "source_doc.docx"))
+    print("Created data/source_doc.docx")
+
+    # --- data/slides.pptx ---
+    prs = Presentation()
+
+    # Slide 1: title + body text
+    slide_layout_title = prs.slide_layouts[1]  # Title and Content
+    slide1 = prs.slides.add_slide(slide_layout_title)
+    slide1.shapes.title.text = "Overview"
+    slide1.placeholders[1].text = (
+        "This presentation provides a high-level overview of the project "
+        "status and key metrics for the current reporting period."
+    )
+
+    # Slide 2: title + table
+    slide_layout_blank = prs.slide_layouts[5]  # Blank
+    slide2 = prs.slides.add_slide(slide_layout_blank)
+
+    # Add title text box
+    tx_box = slide2.shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(8), Inches(1))
+    tf = tx_box.text_frame
+    p = tf.paragraphs[0]
+    p.text = "Data"
+    p.font.size = Pt(28)
+    p.font.bold = True
+
+    # Add table: header + 2 data rows = 3 rows, 2 cols
+    table_shape = slide2.shapes.add_table(
+        rows=3,
+        cols=2,
+        left=Inches(1.5),
+        top=Inches(1.8),
+        width=Inches(6),
+        height=Inches(2),
+    )
+    tbl = table_shape.table
+    tbl.cell(0, 0).text = "Metric"
+    tbl.cell(0, 1).text = "Value"
+    tbl.cell(1, 0).text = "Revenue"
+    tbl.cell(1, 1).text = "$140,000"
+    tbl.cell(2, 0).text = "Growth"
+    tbl.cell(2, 1).text = "22%"
+
+    prs.save(str(DATA_DIR / "slides.pptx"))
+    print("Created data/slides.pptx")
+
+    # --- data/sample.pdf ---
+    # Create a minimal 2-page PDF using raw PDF syntax (no pymupdf dependency)
+    page1_text = (
+        "Quarterly Performance Summary - Page 1  "
+        "The organisation achieved record revenue in Q4, surpassing the "
+        "annual target by 8 percent."
+    )
+    page2_text = (
+        "Quarterly Performance Summary - Page 2  "
+        "Marketing efforts in the quarter focused on content-led growth."
+    )
+    pdf_content = _create_raw_pdf([page1_text, page2_text])
+    (DATA_DIR / "sample.pdf").write_bytes(pdf_content)
+    print("Created data/sample.pdf")
+
+
+def create_conditional_template():
+    """Create a template for testing conditional section removal.
+
+    Structure:
+      - Heading 1: "Report"
+      - Paragraph with red placeholder: "Title"
+      - Heading 1: "Optional Section"
+      - Paragraph with red LLM prompt: "Summarize the optional data if available"
+      - Heading 1: "Summary"
+      - Regular text paragraph
+    """
+    doc = Document()
+
+    doc.add_heading("Report", level=1)
+    p1 = doc.add_paragraph()
+    _add_red_text(p1, "Title")
+
+    doc.add_heading("Optional Section", level=1)
+    p2 = doc.add_paragraph()
+    _add_red_text(p2, "Summarize the optional data if available")
+
+    doc.add_heading("Summary", level=1)
+    doc.add_paragraph("This section contains the final summary and conclusions of the report.")
+
+    doc.save(str(TEMPLATES_DIR / "conditional_template.docx"))
+    print("Created templates/conditional_template.docx")
+
+
 if __name__ == "__main__":
     create_simple_placeholder()
     create_simple_table()
     create_mixed_markers()
     create_table_with_sample_data()
     create_data_fixtures()
+    create_phase2_data_fixtures()
+    create_conditional_template()
     print("\nAll fixtures created successfully!")

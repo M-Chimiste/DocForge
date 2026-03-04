@@ -17,6 +17,12 @@ class ExtractionConfig:
     delimiter: str = ","
     encoding: str = "utf-8"
     json_path: str | None = None
+    # Phase 2 fields
+    yaml_path: str | None = None
+    slide_range: str | None = None
+    include_notes: bool = True
+    include_headers: bool = True
+    text_encoding: str = "utf-8"
 
 
 @dataclass
@@ -24,6 +30,7 @@ class ExtractedData:
     source_path: Path
     dataframes: dict[str, pd.DataFrame] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
+    text_content: str | None = None
 
 
 class BaseExtractor(ABC):

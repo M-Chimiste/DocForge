@@ -1,18 +1,22 @@
+import { useState } from "react";
 import {
   Box,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
+  Button,
+  CircularProgress,
   Typography,
-  Paper,
-  IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import type { TemplateMarker, DataSource, MappingEntry } from "../types";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import type {
+  TemplateMarker,
+  DataSource,
+  MappingEntry,
+  AutoResolutionMatch,
+} from "../types";
+import { autoResolve } from "../api/client";
+import MappingCard from "./mapping/MappingCard";
 
 interface Props {
+  projectId: number;
   markers: TemplateMarker[];
   dataSources: DataSource[];
   mappings: MappingEntry[];
@@ -20,14 +24,16 @@ interface Props {
 }
 
 export default function MappingPanel({
+  projectId,
   markers,
   dataSources,
   mappings,
   onMappingsChange,
 }: Props) {
-  const mappableMarkers = markers.filter(
-    (m) => m.marker_type !== "llm_prompt"
-  );
+  const [autoMatches, setAutoMatches] = useState<
+    Record<string, AutoResolutionMatch>
+  >({});
+  const [resolving, setResolving] = useState(false);
 
   const getMapping = (markerId: string) =>
     mappings.find((m) => m.markerId === markerId);
@@ -51,7 +57,43 @@ export default function MappingPanel({
     onMappingsChange(mappings.filter((m) => m.markerId !== markerId));
   };
 
-  if (mappableMarkers.length === 0) {
+  const handleAutoResolve = async () => {
+    setResolving(true);
+    try {
+      const report = await autoResolve(projectId);
+
+      // Build match lookup
+      const matchMap: Record<string, AutoResolutionMatch> = {};
+      for (const match of report.matches) {
+        matchMap[match.markerId] = match;
+      }
+      setAutoMatches(matchMap);
+
+      // Apply auto-resolved matches as mappings (only for unmapped markers)
+      const newMappings = [...mappings];
+      for (const match of report.matches) {
+        const existing = newMappings.findIndex(
+          (m) => m.markerId === match.markerId
+        );
+        if (existing < 0) {
+          newMappings.push({
+            markerId: match.markerId,
+            dataSource: match.dataSource,
+            field: match.field ?? undefined,
+            sheet: match.sheet ?? undefined,
+            path: match.path ?? undefined,
+          });
+        }
+      }
+      onMappingsChange(newMappings);
+    } catch (err) {
+      console.error("Auto-resolve failed:", err);
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  if (markers.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
         No mappable markers found. Upload a template first.
@@ -61,87 +103,37 @@ export default function MappingPanel({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="subtitle1">Marker Mappings</Typography>
-      {mappableMarkers.map((marker) => {
-        const mapping = getMapping(marker.id);
-        return (
-          <Paper key={marker.id} variant="outlined" sx={{ p: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 1,
-              }}
-            >
-              <Typography variant="body2" fontWeight="bold">
-                {marker.text}
-              </Typography>
-              {mapping && (
-                <IconButton
-                  size="small"
-                  onClick={() => removeMapping(marker.id)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Typography variant="subtitle1">Marker Mappings</Typography>
+        {dataSources.length > 0 && (
+          <Button
+            size="small"
+            startIcon={
+              resolving ? (
+                <CircularProgress size={16} />
+              ) : (
+                <AutoFixHighIcon />
+              )
+            }
+            onClick={handleAutoResolve}
+            disabled={resolving}
+          >
+            Auto-Resolve
+          </Button>
+        )}
+      </Box>
 
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Data Source</InputLabel>
-                <Select
-                  value={mapping?.dataSource || ""}
-                  label="Data Source"
-                  onChange={(e) =>
-                    updateMapping(marker.id, {
-                      dataSource: e.target.value,
-                    })
-                  }
-                >
-                  {dataSources.map((ds) => (
-                    <MenuItem key={ds.filename} value={ds.filename}>
-                      {ds.filename}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {marker.marker_type === "variable_placeholder" && (
-                <>
-                  <TextField
-                    size="small"
-                    label="Field"
-                    value={mapping?.field || ""}
-                    onChange={(e) =>
-                      updateMapping(marker.id, { field: e.target.value })
-                    }
-                  />
-                  <TextField
-                    size="small"
-                    label="Path (JSON)"
-                    value={mapping?.path || ""}
-                    onChange={(e) =>
-                      updateMapping(marker.id, { path: e.target.value })
-                    }
-                  />
-                </>
-              )}
-
-              {marker.marker_type === "sample_data" && (
-                <TextField
-                  size="small"
-                  label="Sheet"
-                  value={mapping?.sheet || ""}
-                  onChange={(e) =>
-                    updateMapping(marker.id, { sheet: e.target.value })
-                  }
-                />
-              )}
-            </Box>
-          </Paper>
-        );
-      })}
+      {markers.map((marker) => (
+        <MappingCard
+          key={marker.id}
+          marker={marker}
+          mapping={getMapping(marker.id)}
+          dataSources={dataSources}
+          autoMatch={autoMatches[marker.id]}
+          onUpdate={(updates) => updateMapping(marker.id, updates)}
+          onRemove={() => removeMapping(marker.id)}
+        />
+      ))}
     </Box>
   );
 }

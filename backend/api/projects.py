@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 
-from api.schemas import ProjectCreate, ProjectResponse
+from api.errors import DocForgeError
+from api.schemas import ProjectCreate, ProjectResponse, ProjectUpdate
 from db.models import Project
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -48,8 +49,6 @@ async def get_project(project_id: int, request: Request) -> ProjectResponse:
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            from api.errors import DocForgeError
-
             raise DocForgeError(
                 error="not_found",
                 message=f"Project {project_id} not found",
@@ -63,3 +62,48 @@ async def get_project(project_id: int, request: Request) -> ProjectResponse:
             created_at=project.created_at.isoformat(),
             updated_at=project.updated_at.isoformat(),
         )
+
+
+@router.put("/{project_id}", response_model=ProjectResponse)
+async def update_project(project_id: int, body: ProjectUpdate, request: Request) -> ProjectResponse:
+    session_factory = request.app.state.db
+    with session_factory() as session:
+        project = session.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise DocForgeError(
+                error="not_found",
+                message=f"Project {project_id} not found",
+                status_code=404,
+            )
+        if body.name is not None:
+            project.name = body.name
+        if body.description is not None:
+            project.description = body.description
+        if body.mapping_config is not None:
+            project.mapping_config = body.mapping_config
+        session.commit()
+        session.refresh(project)
+        return ProjectResponse(
+            id=project.id,
+            name=project.name,
+            description=project.description,
+            template_path=project.template_path,
+            created_at=project.created_at.isoformat(),
+            updated_at=project.updated_at.isoformat(),
+        )
+
+
+@router.delete("/{project_id}")
+async def delete_project(project_id: int, request: Request) -> dict:
+    session_factory = request.app.state.db
+    with session_factory() as session:
+        project = session.query(Project).filter(Project.id == project_id).first()
+        if not project:
+            raise DocForgeError(
+                error="not_found",
+                message=f"Project {project_id} not found",
+                status_code=404,
+            )
+        session.delete(project)
+        session.commit()
+    return {"ok": True}
