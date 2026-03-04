@@ -50,4 +50,4 @@ class TextRenderer(BaseRenderer):
                 error=f"Paragraph index {marker.paragraph_index} out of range",
             )
 
-        return RenderResult(marker_id=marker.id, success=True)
+        return RenderResult(marker_id=marker.id, success=True, rendered_by="text")

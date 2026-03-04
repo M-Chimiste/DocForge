@@ -3,6 +3,7 @@ import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import Layout from "./components/Layout";
 import ProjectsPage from "./pages/ProjectsPage";
 import WorkspacePage from "./pages/WorkspacePage";
+import EditorPage from "./pages/EditorPage";
 
 const theme = createTheme({
   palette: {
@@ -20,6 +21,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<ProjectsPage />} />
             <Route path="/projects/:projectId" element={<WorkspacePage />} />
+            <Route path="/projects/:projectId/editor/:runId" element={<EditorPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

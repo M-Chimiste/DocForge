@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from api.auto_resolution import router as auto_resolution_router
 from api.data_preview import router as data_preview_router
 from api.data_sources import router as data_sources_router
+from api.editor import router as editor_router
 from api.generation import router as generation_router
 from api.generation_history import router as generation_history_router
 from api.generation_stream import router as generation_stream_router
@@ -26,3 +27,4 @@ api_router.include_router(project_export_router)
 api_router.include_router(llm_config_router)
 api_router.include_router(generation_stream_router)
 api_router.include_router(llm_extraction_router)
+api_router.include_router(editor_router)

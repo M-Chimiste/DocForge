@@ -106,6 +106,10 @@ async def generate_stream(
     def progress_callback(event: dict[str, Any]) -> None:
         progress_queue.put(event)
 
+    # Analyze template for snapshot before generation
+    pre_engine = GenerationEngine(llm_config=llm_config)
+    analysis_snap = pre_engine.analyze(template_path)
+
     async def event_generator():
         loop = asyncio.get_event_loop()
 
@@ -149,6 +153,12 @@ async def generate_stream(
                 mapping_snapshot=[m.model_dump(mode="json") for m in body.mappings],
                 output_path=str(output_path),
                 report=report.model_dump(mode="json"),
+                analysis_snapshot=analysis_snap.model_dump(mode="json"),
+                auto_resolution_snapshot=(
+                    report.auto_resolution_report.model_dump(mode="json")
+                    if report.auto_resolution_report
+                    else None
+                ),
                 status="completed",
             )
             session.add(run)

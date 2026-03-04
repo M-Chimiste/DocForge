@@ -15,9 +15,11 @@ import {
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import DownloadIcon from "@mui/icons-material/Download";
 import StopIcon from "@mui/icons-material/Stop";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import type { MappingEntry, GenerateResult, ConditionalConfig } from "../types";
 import { generateDocument, downloadGeneration } from "../api/client";
 import useGenerationStream from "../hooks/useGenerationStream";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   projectId: number;
@@ -61,6 +63,7 @@ export default function GenerateButton({
   disabled,
   hasLLMMarkers,
 }: Props) {
+  const navigate = useNavigate();
   // Sync generation state
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState<GenerateResult | null>(null);
@@ -164,13 +167,25 @@ export default function GenerateButton({
         )}
 
         {result && (
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={handleDownload}
-          >
-            Download .docx
-          </Button>
+          <>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleDownload}
+            >
+              Download .docx
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<EditNoteIcon />}
+              onClick={() =>
+                navigate(`/projects/${projectId}/editor/${result.runId}`)
+              }
+            >
+              Open in Editor
+            </Button>
+          </>
         )}
       </Box>
 
@@ -248,12 +263,25 @@ export default function GenerateButton({
         <DialogActions>
           <Button onClick={() => setReportOpen(false)}>Close</Button>
           <Button
-            variant="contained"
+            variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={handleDownload}
           >
             Download
           </Button>
+          {result && (
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<EditNoteIcon />}
+              onClick={() => {
+                setReportOpen(false);
+                navigate(`/projects/${projectId}/editor/${result.runId}`);
+              }}
+            >
+              Open in Editor
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

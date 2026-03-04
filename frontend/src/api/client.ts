@@ -13,6 +13,8 @@ import type {
   LLMConfig,
   LLMConfigUpdate,
   LLMTestResult,
+  EditorDocumentResponse,
+  RegenerateSectionResponse,
 } from "../types";
 
 const api = axios.create({
@@ -205,4 +207,40 @@ export async function testLLMConnection(
 // Streaming generation URL helper
 export function getGenerateStreamUrl(projectId: number): string {
   return `/api/v1/projects/${projectId}/generate-stream`;
+}
+
+// Editor (Phase 4)
+export async function getEditorDocument(
+  runId: number
+): Promise<EditorDocumentResponse> {
+  const { data } = await api.get<EditorDocumentResponse>(
+    `/generations/${runId}/document`
+  );
+  return data;
+}
+
+export async function saveEditorDocument(
+  runId: number,
+  state: unknown
+): Promise<void> {
+  await api.put(`/generations/${runId}/document`, state);
+}
+
+export async function regenerateSection(
+  runId: number,
+  markerId: string,
+  modifiedPrompt?: string
+): Promise<RegenerateSectionResponse> {
+  const { data } = await api.post<RegenerateSectionResponse>(
+    `/generations/${runId}/regenerate-section`,
+    { markerId, modifiedPrompt }
+  );
+  return data;
+}
+
+export async function exportDocument(runId: number): Promise<Blob> {
+  const { data } = await api.get(`/generations/${runId}/export`, {
+    responseType: "blob",
+  });
+  return data;
 }

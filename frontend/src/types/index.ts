@@ -166,3 +166,45 @@ export interface DataPreview {
   >;
   textSnippet?: string | null;
 }
+
+// Editor types (Phase 4)
+export interface EditorMark {
+  type: string;
+  attrs?: Record<string, unknown> | null;
+}
+
+export interface EditorNode {
+  type: string;
+  attrs?: Record<string, unknown> | null;
+  marks?: EditorMark[] | null;
+  content?: EditorNode[] | null;
+  text?: string | null;
+}
+
+export interface MarkerEditorMeta {
+  marker_id: string;
+  marker_type: string;
+  original_text: string;
+  rendered_by: string;
+  confidence: number | null;
+  llm_model: string | null;
+  section_id: string | null;
+  mapping_snapshot: Record<string, unknown> | null;
+}
+
+export interface EditorDocumentMeta {
+  generation_run_id: number;
+  project_id: number;
+  template_analysis: Record<string, unknown> | null;
+  marker_metadata: Record<string, MarkerEditorMeta>;
+}
+
+export interface EditorDocumentResponse {
+  content: EditorNode;
+  meta: EditorDocumentMeta;
+}
+
+export interface RegenerateSectionResponse {
+  content: string;
+  llmUsage: Record<string, unknown> | null;
+}

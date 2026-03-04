@@ -63,7 +63,7 @@ class TableRenderer(BaseRenderer):
                     value = row_data[mapped_col]
                     new_row.cells[col_idx].text = str(value) if value is not None else ""
 
-        return RenderResult(marker_id=marker.id, success=True)
+        return RenderResult(marker_id=marker.id, success=True, rendered_by="table")
 
 
 def render_table_direct(

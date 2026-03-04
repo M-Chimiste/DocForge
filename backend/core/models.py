@@ -100,6 +100,7 @@ class RenderResult(BaseModel):
     success: bool
     error: str | None = None
     llm_usage: dict[str, Any] | None = None
+    rendered_by: str | None = None
 
 
 class AutoResolutionMatch(BaseModel):

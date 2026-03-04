@@ -166,6 +166,18 @@ class LLMExtractionResponse(BaseModel):
     tokens_used: int = Field(serialization_alias="tokensUsed")
 
 
+class RegenerateSectionRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    marker_id: str = Field(alias="markerId")
+    modified_prompt: str | None = Field(default=None, alias="modifiedPrompt")
+
+
+class RegenerateSectionResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    content: str
+    llm_usage: dict[str, Any] | None = Field(default=None, serialization_alias="llmUsage")
+
+
 class ErrorResponse(BaseModel):
     error: str
     message: str

@@ -99,6 +99,7 @@ async def generate_document(
     output_path = output_dir / f"output_{uuid.uuid4().hex[:8]}.docx"
 
     engine = GenerationEngine(llm_config=llm_config)
+    analysis = engine.analyze(template_path)
     report = engine.generate(template_path, data_paths, mappings, output_path, conditionals)
 
     # Record generation run in database
@@ -108,6 +109,12 @@ async def generate_document(
             mapping_snapshot=[m.model_dump(mode="json") for m in body.mappings],
             output_path=str(output_path),
             report=report.model_dump(mode="json"),
+            analysis_snapshot=analysis.model_dump(mode="json"),
+            auto_resolution_snapshot=(
+                report.auto_resolution_report.model_dump(mode="json")
+                if report.auto_resolution_report
+                else None
+            ),
             status="completed",
         )
         session.add(run)

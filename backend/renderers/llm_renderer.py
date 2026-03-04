@@ -117,6 +117,7 @@ class LLMRenderer(BaseRenderer):
             return RenderResult(
                 marker_id=marker.id,
                 success=True,
+                rendered_by="llm",
                 llm_usage={
                     "prompt_tokens": response.prompt_tokens,
                     "completion_tokens": response.completion_tokens,

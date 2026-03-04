@@ -41,4 +41,9 @@ class GenerationRun(Base):
     status = Column(String, default="completed")
     created_at = Column(DateTime, default=_utcnow)
 
+    # Phase 4: Editor state
+    editor_state = Column(JSON, nullable=True)
+    analysis_snapshot = Column(JSON, nullable=True)
+    auto_resolution_snapshot = Column(JSON, nullable=True)
+
     project = relationship("Project", back_populates="generation_runs")

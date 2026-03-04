@@ -65,7 +65,7 @@ class PlaceholderRenderer(BaseRenderer):
             if format_source:
                 copy_run_format(format_source, run)
 
-        return RenderResult(marker_id=marker.id, success=True)
+        return RenderResult(marker_id=marker.id, success=True, rendered_by="placeholder")
 
     def _resolve_value(self, data: DataStore, mapping: MappingEntry) -> str | None:
         """Get the value to substitute from the data store."""

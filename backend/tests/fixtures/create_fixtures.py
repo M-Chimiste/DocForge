@@ -385,6 +385,46 @@ def create_conditional_template():
     print("Created templates/conditional_template.docx")
 
 
+def create_editor_test_template():
+    """Create a template for editor round-trip testing.
+
+    Structure:
+      - Heading 1: "Report Title"
+      - Paragraph with placeholder: "Company Name"
+      - Heading 2: "Financial Overview"
+      - Paragraph with LLM prompt: "Provide a brief financial overview..."
+      - Table with headers: Metric | Q1 | Q2
+      - Heading 2: "Conclusion"
+      - Regular text paragraph
+    """
+    doc = Document()
+
+    doc.add_heading("Report Title", level=1)
+    p1 = doc.add_paragraph("Prepared for ")
+    _add_red_text(p1, "Company Name")
+    p1.add_run(".")
+
+    doc.add_heading("Financial Overview", level=2)
+    p2 = doc.add_paragraph()
+    _add_red_text(
+        p2,
+        "Provide a brief financial overview based on the quarterly revenue data",
+    )
+
+    table = doc.add_table(rows=1, cols=3)
+    table.style = "Table Grid"
+    headers = table.rows[0].cells
+    headers[0].text = "Metric"
+    headers[1].text = "Q1"
+    headers[2].text = "Q2"
+
+    doc.add_heading("Conclusion", level=2)
+    doc.add_paragraph("This concludes the quarterly report for the period.")
+
+    doc.save(str(TEMPLATES_DIR / "editor_test_template.docx"))
+    print("Created editor_test_template.docx")
+
+
 if __name__ == "__main__":
     create_simple_placeholder()
     create_simple_table()
@@ -393,4 +433,5 @@ if __name__ == "__main__":
     create_data_fixtures()
     create_phase2_data_fixtures()
     create_conditional_template()
+    create_editor_test_template()
     print("\nAll fixtures created successfully!")
