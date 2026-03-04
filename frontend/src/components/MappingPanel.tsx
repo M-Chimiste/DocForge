@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -14,6 +14,7 @@ import type {
 } from "../types";
 import { autoResolve } from "../api/client";
 import MappingCard from "./mapping/MappingCard";
+import HelpTooltip from "./HelpTooltip";
 
 interface Props {
   projectId: number;
@@ -23,7 +24,7 @@ interface Props {
   onMappingsChange: (mappings: MappingEntry[]) => void;
 }
 
-export default function MappingPanel({
+function MappingPanel({
   projectId,
   markers,
   dataSources,
@@ -105,6 +106,7 @@ export default function MappingPanel({
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="subtitle1">Marker Mappings</Typography>
+        <HelpTooltip title="Map template markers to data source fields. Use auto-resolve for automatic matching or map manually." />
         {dataSources.length > 0 && (
           <Button
             size="small"
@@ -117,6 +119,7 @@ export default function MappingPanel({
             }
             onClick={handleAutoResolve}
             disabled={resolving}
+            aria-label="Auto-resolve marker mappings"
           >
             Auto-Resolve
           </Button>
@@ -137,3 +140,5 @@ export default function MappingPanel({
     </Box>
   );
 }
+
+export default React.memo(MappingPanel);

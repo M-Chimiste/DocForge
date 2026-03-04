@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docforge-currency-transform"
+version = "0.1.0"
+description = "DocForge plugin: currency conversion transform for DataFrame columns."
+requires-python = ">=3.12"
+dependencies = [
+    "docforge",
+]
+
+[project.entry-points."docforge.transforms"]
+currency_convert = "docforge_currency_transform.transform:CurrencyConvertTransform"

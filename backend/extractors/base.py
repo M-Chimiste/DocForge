@@ -48,6 +48,13 @@ class ExtractorRegistry:
     def register(self, extractor: BaseExtractor) -> None:
         self._extractors.append(extractor)
 
+    def load_plugins(self) -> None:
+        """Discover and register third-party extractor plugins via entry points."""
+        from core.plugin_loader import ENTRY_POINT_GROUPS, discover_plugins
+
+        for extractor in discover_plugins(ENTRY_POINT_GROUPS["extractors"]):
+            self.register(extractor)
+
     def get_extractor(self, file_path: Path) -> BaseExtractor:
         for ext in self._extractors:
             if ext.can_handle(file_path):

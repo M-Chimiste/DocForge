@@ -23,6 +23,13 @@ class TransformRegistry:
     def register(self, transform: BaseTransform) -> None:
         self._transforms.append(transform)
 
+    def load_plugins(self) -> None:
+        """Discover and register third-party transform plugins via entry points."""
+        from core.plugin_loader import ENTRY_POINT_GROUPS, discover_plugins
+
+        for transform in discover_plugins(ENTRY_POINT_GROUPS["transforms"]):
+            self.register(transform)
+
     def get_transform(self, transform_type: str) -> BaseTransform:
         for t in self._transforms:
             if t.can_handle(transform_type):

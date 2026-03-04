@@ -26,6 +26,7 @@ import {
   updateProjectLLMConfig,
   testLLMConnection,
 } from "../api/client";
+import HelpTooltip from "./HelpTooltip";
 
 interface Props {
   projectId: number;
@@ -118,6 +119,7 @@ export default function LLMSettingsPanel({ projectId, hasLLMMarkers }: Props) {
         <Stack direction="row" spacing={1} alignItems="center">
           <SmartToyIcon fontSize="small" />
           <Typography variant="subtitle2">LLM Settings</Typography>
+          <HelpTooltip title="Configure an LLM provider for AI-generated content. Optional — all other features work without LLM." />
           {isConfigured ? (
             <Chip
               label={`${config.provider}/${config.model}`}

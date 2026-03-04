@@ -18,4 +18,5 @@ def create_default_transform_registry() -> TransformRegistry:
     registry.register(DateFormatTransform())
     registry.register(NumberFormatTransform())
     registry.register(ComputedTransform())
+    registry.load_plugins()
     return registry

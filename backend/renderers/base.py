@@ -31,6 +31,13 @@ class RendererRegistry:
     def register(self, renderer: BaseRenderer) -> None:
         self._renderers.append(renderer)
 
+    def load_plugins(self) -> None:
+        """Discover and register third-party renderer plugins via entry points."""
+        from core.plugin_loader import ENTRY_POINT_GROUPS, discover_plugins
+
+        for renderer in discover_plugins(ENTRY_POINT_GROUPS["renderers"]):
+            self.register(renderer)
+
     def get_renderer(self, marker: TemplateMarker) -> BaseRenderer | None:
         for r in self._renderers:
             if r.can_handle(marker):

@@ -88,11 +88,12 @@ export async function listDataSources(
 export async function previewDataSource(
   projectId: number,
   filename: string,
-  rows = 10
+  page = 1,
+  pageSize = 50
 ): Promise<DataPreview> {
   const { data } = await api.get<DataPreview>(
     `/projects/${projectId}/data-sources/${encodeURIComponent(filename)}/preview`,
-    { params: { rows } }
+    { params: { page, page_size: pageSize } }
   );
   return data;
 }

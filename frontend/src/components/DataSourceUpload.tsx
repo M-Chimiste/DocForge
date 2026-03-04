@@ -13,6 +13,7 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import AddIcon from "@mui/icons-material/Add";
 import type { DataSource } from "../types";
 import { uploadDataSource } from "../api/client";
+import HelpTooltip from "./HelpTooltip";
 
 interface Props {
   projectId: number;
@@ -50,17 +51,20 @@ export default function DataSourceUpload({
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
         <Typography variant="subtitle1">Data Sources</Typography>
+        <HelpTooltip title="Upload data files to use as content sources. Supported formats: Excel, CSV, JSON, YAML, Text, Word, PowerPoint, PDF." />
         <Button
           size="small"
           startIcon={loading ? <CircularProgress size={16} /> : <AddIcon />}
           component="label"
           disabled={loading}
+          aria-label="Add data source file"
         >
           Add
           <input
             type="file"
             hidden
             accept=".xlsx,.xls,.csv,.tsv,.json,.yaml,.yml,.txt,.md,.docx,.pptx,.pdf"
+            aria-label="Select a data source file"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) handleUpload(file);
@@ -69,6 +73,7 @@ export default function DataSourceUpload({
         </Button>
       </Box>
 
+      <Box aria-live="polite">
       {dataSources.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           No data sources uploaded yet.
@@ -88,6 +93,7 @@ export default function DataSourceUpload({
           ))}
         </List>
       )}
+      </Box>
     </Box>
   );
 }

@@ -16,10 +16,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import type { Project } from "../types";
 import { createProject, deleteProject, listProjects } from "../api/client";
 import DeleteConfirmDialog from "../components/DeleteConfirmDialog";
+import OnboardingFlow from "../components/OnboardingFlow";
 import {
   ExportButton,
   ImportButton,
 } from "../components/ProjectExportImport";
+import useOnboarding from "../hooks/useOnboarding";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -37,6 +39,7 @@ export default function ProjectsPage() {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const { showOnboarding, dismissOnboarding } = useOnboarding();
 
   useEffect(() => {
     listProjects().then(setProjects).catch(console.error);
@@ -152,6 +155,8 @@ export default function ProjectsPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      <OnboardingFlow open={showOnboarding} onClose={dismissOnboarding} />
     </Container>
   );
 }

@@ -1,6 +1,16 @@
-import { SimpleTreeView } from "@mui/x-tree-view/SimpleTreeView";
-import { TreeItem } from "@mui/x-tree-view/TreeItem";
-import { Box, Chip, Typography } from "@mui/material";
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+  Chip,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -45,25 +55,20 @@ function MarkerItem({
   onClick?: () => void;
 }) {
   return (
-    <TreeItem
-      itemId={marker.id}
-      label={
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, py: 0.5 }}
-          onClick={onClick}
-        >
-          {markerIcon(marker.marker_type)}
-          <Typography variant="body2" noWrap sx={{ flex: 1 }}>
-            {marker.text}
-          </Typography>
-          <Chip
-            label={markerLabel(marker.marker_type)}
-            size="small"
-            variant="outlined"
-          />
-        </Box>
-      }
-    />
+    <ListItemButton dense onClick={onClick}>
+      <ListItemIcon sx={{ minWidth: 32 }}>
+        {markerIcon(marker.marker_type)}
+      </ListItemIcon>
+      <ListItemText
+        primary={marker.text}
+        primaryTypographyProps={{ variant: "body2", noWrap: true }}
+      />
+      <Chip
+        label={markerLabel(marker.marker_type)}
+        size="small"
+        variant="outlined"
+      />
+    </ListItemButton>
   );
 }
 
@@ -72,57 +77,63 @@ export default function TemplateAnalysisView({
   onSelectMarker,
 }: Props) {
   return (
-    <SimpleTreeView>
+    <Box>
       {analysis.sections.map((section) => (
-        <TreeItem
-          key={section.id}
-          itemId={section.id}
-          label={
+        <Accordion key={section.id} disableGutters defaultExpanded={false}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="subtitle2">
               H{section.level}: {section.title}
             </Typography>
-          }
-        >
-          {section.markers.map((m) => (
-            <MarkerItem
-              key={m.id}
-              marker={m}
-              onClick={() => onSelectMarker?.(m.id)}
+            <Chip
+              label={`${section.markers.length} markers`}
+              size="small"
+              variant="outlined"
+              sx={{ ml: 1 }}
             />
-          ))}
-        </TreeItem>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            <List disablePadding>
+              {section.markers.map((m) => (
+                <MarkerItem
+                  key={m.id}
+                  marker={m}
+                  onClick={() => onSelectMarker?.(m.id)}
+                />
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
       ))}
 
       {analysis.tables.length > 0 && (
-        <TreeItem
-          itemId="tables-group"
-          label={
+        <Accordion disableGutters defaultExpanded={false}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="subtitle2">
               Tables ({analysis.tables.length})
             </Typography>
-          }
-        >
-          {analysis.tables.map((table) => (
-            <TreeItem
-              key={table.id}
-              itemId={table.id}
-              label={
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <TableChartIcon fontSize="small" />
-                  <Typography variant="body2">
-                    {table.headers.join(" | ")}
-                  </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ p: 0 }}>
+            <List disablePadding>
+              {analysis.tables.map((table) => (
+                <ListItemButton key={table.id} dense>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <TableChartIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={table.headers.join(" | ")}
+                    primaryTypographyProps={{ variant: "body2" }}
+                  />
                   <Chip
                     label={`${table.row_count} rows`}
                     size="small"
                     variant="outlined"
                   />
-                </Box>
-              }
-            />
-          ))}
-        </TreeItem>
+                </ListItemButton>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
       )}
-    </SimpleTreeView>
+    </Box>
   );
 }

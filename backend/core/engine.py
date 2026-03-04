@@ -41,6 +41,7 @@ class GenerationEngine:
         self.renderer_registry.register(TextRenderer())
         self.renderer_registry.register(PlaceholderRenderer())
         self.renderer_registry.register(TableRenderer())
+        self.renderer_registry.load_plugins()
 
         self.transform_registry = create_default_transform_registry()
         self.transform_pipeline = TransformPipeline(self.transform_registry)

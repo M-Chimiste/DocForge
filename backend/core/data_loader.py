@@ -27,6 +27,7 @@ def create_default_registry() -> ExtractorRegistry:
     registry.register(DocxContentExtractor())
     registry.register(PptxExtractor())
     registry.register(PdfExtractor())
+    registry.load_plugins()
     return registry
 
 

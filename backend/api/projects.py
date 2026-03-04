@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 
-from api.errors import DocForgeError
+from api.errors import catalog_error
 from api.schemas import ProjectCreate, ProjectResponse, ProjectUpdate
 from db.models import Project
 
@@ -49,11 +49,7 @@ async def get_project(project_id: int, request: Request) -> ProjectResponse:
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Project {project_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=project_id)
         return ProjectResponse(
             id=project.id,
             name=project.name,
@@ -70,11 +66,7 @@ async def update_project(project_id: int, body: ProjectUpdate, request: Request)
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Project {project_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=project_id)
         if body.name is not None:
             project.name = body.name
         if body.description is not None:
@@ -99,11 +91,7 @@ async def delete_project(project_id: int, request: Request) -> dict:
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Project {project_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=project_id)
         session.delete(project)
         session.commit()
     return {"ok": True}

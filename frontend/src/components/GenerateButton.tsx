@@ -20,6 +20,7 @@ import type { MappingEntry, GenerateResult, ConditionalConfig } from "../types";
 import { generateDocument, downloadGeneration } from "../api/client";
 import useGenerationStream from "../hooks/useGenerationStream";
 import { useNavigate } from "react-router-dom";
+import HelpTooltip from "./HelpTooltip";
 
 interface Props {
   projectId: number;
@@ -123,12 +124,13 @@ export default function GenerateButton({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       {loading && (
-        <Box>
+        <Box aria-live="polite" role="status">
           {useStream && stream.progress ? (
             <>
               <LinearProgress
                 variant="determinate"
                 value={stream.progressPercent}
+                aria-label="Generation progress"
               />
               <Typography variant="caption" color="text.secondary">
                 {stageLabel(
@@ -139,7 +141,7 @@ export default function GenerateButton({
               </Typography>
             </>
           ) : (
-            <LinearProgress />
+            <LinearProgress aria-label="Generation in progress" />
           )}
         </Box>
       )}
@@ -151,9 +153,11 @@ export default function GenerateButton({
           startIcon={<PlayArrowIcon />}
           onClick={handleGenerate}
           disabled={disabled || loading}
+          aria-label="Generate document from template and data"
         >
           Generate Document
         </Button>
+        <HelpTooltip title="Generate your document by filling in all mapped markers with data from your sources." />
 
         {useStream && loading && (
           <Button
@@ -190,7 +194,7 @@ export default function GenerateButton({
       </Box>
 
       {error && (
-        <Typography variant="body2" color="error">
+        <Typography variant="body2" color="error" aria-live="polite" role="alert">
           {error}
         </Typography>
       )}

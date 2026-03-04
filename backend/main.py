@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.errors import DocForgeError, docforge_exception_handler, generic_exception_handler
 from api.router import api_router
@@ -22,7 +24,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="DocForge", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="DocForge", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,3 +34,8 @@ app.add_middleware(
 app.add_exception_handler(DocForgeError, docforge_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 app.include_router(api_router, prefix="/api/v1")
+
+# Serve bundled frontend if available (PyPI/Docker installs)
+_static_dir = Path(__file__).parent / "static"
+if _static_dir.exists():
+    app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="static")

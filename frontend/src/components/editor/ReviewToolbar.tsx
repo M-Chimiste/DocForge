@@ -47,6 +47,7 @@ export default function ReviewToolbar({
           <Button
             startIcon={<Check />}
             color="success"
+            aria-label="Accept rendered content"
             onClick={() => {
               const id = getActiveMarkerId(editor);
               if (id) onAccept(id);
@@ -57,6 +58,7 @@ export default function ReviewToolbar({
           <Button
             startIcon={<Close />}
             color="error"
+            aria-label="Reject rendered content"
             onClick={() => {
               const id = getActiveMarkerId(editor);
               if (id) onReject(id);
@@ -66,6 +68,7 @@ export default function ReviewToolbar({
           </Button>
           <Button
             startIcon={<Refresh />}
+            aria-label="Regenerate content"
             onClick={() => {
               const id = getActiveMarkerId(editor);
               if (id) onRegenerate(id);
@@ -75,6 +78,7 @@ export default function ReviewToolbar({
           </Button>
           <Button
             startIcon={<EditNote />}
+            aria-label="Edit marker mapping"
             onClick={() => {
               const id = getActiveMarkerId(editor);
               if (id) onEditMapping(id);

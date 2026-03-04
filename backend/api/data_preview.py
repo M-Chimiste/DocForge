@@ -1,5 +1,7 @@
 """Data preview API endpoint."""
 
+import math
+
 from fastapi import APIRouter, Query, Request
 
 from api.errors import DocForgeError
@@ -14,7 +16,8 @@ async def preview_data_source(
     project_id: int,
     filename: str,
     request: Request,
-    rows: int = Query(default=10, ge=1, le=100),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=50, ge=1, le=500),
 ) -> DataPreviewResponse:
     settings = request.app.state.settings
     file_path = settings.upload_dir / str(project_id) / "data" / filename
@@ -39,11 +42,18 @@ async def preview_data_source(
     sheets = list(source.dataframes.keys())
     preview: dict = {}
     for sheet_name, df in source.dataframes.items():
-        truncated = df.head(rows)
+        total_rows = len(df)
+        total_pages = max(1, math.ceil(total_rows / page_size))
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated = df.iloc[start:end]
         preview[sheet_name] = {
-            "columns": list(truncated.columns),
-            "rows": truncated.fillna("").values.tolist(),
-            "totalRows": len(df),
+            "columns": list(paginated.columns),
+            "rows": paginated.fillna("").values.tolist(),
+            "totalRows": total_rows,
+            "page": page,
+            "pageSize": page_size,
+            "totalPages": total_pages,
         }
 
     return DataPreviewResponse(

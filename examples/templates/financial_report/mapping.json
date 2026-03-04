@@ -1,0 +1,26 @@
+[
+  {
+    "marker_id": "marker-0",
+    "data_source": "config.json",
+    "field": "company_name"
+  },
+  {
+    "marker_id": "marker-1",
+    "data_source": "config.json",
+    "field": "fiscal_year"
+  },
+  {
+    "marker_id": "marker-2",
+    "data_source": "config.json",
+    "field": "report_date"
+  },
+  {
+    "marker_id": "table-0",
+    "data_source": "revenue.xlsx",
+    "sheet": "Revenue"
+  },
+  {
+    "marker_id": "table-1",
+    "data_source": "expenses.csv"
+  }
+]

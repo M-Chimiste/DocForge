@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse
 
-from api.errors import DocForgeError
+from api.errors import catalog_error
 from api.schemas import GenerationRunResponse
 from db.models import GenerationRun, Project
 
@@ -19,11 +19,7 @@ async def list_generations(project_id: int, request: Request) -> list[Generation
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Project {project_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=project_id)
 
         runs = (
             session.query(GenerationRun)
@@ -57,11 +53,7 @@ async def get_generation(project_id: int, run_id: int, request: Request) -> Gene
             .first()
         )
         if not run:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Generation run {run_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("generation_not_found", status_code=404, run_id=run_id)
         return GenerationRunResponse(
             id=run.id,
             project_id=run.project_id,
@@ -85,18 +77,14 @@ async def download_generation(project_id: int, run_id: int, request: Request) ->
             .first()
         )
         if not run:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Generation run {run_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("generation_not_found", status_code=404, run_id=run_id)
         output_path = run.output_path
 
     if not output_path or not Path(output_path).exists():
-        raise DocForgeError(
-            error="file_missing",
-            message="Generated document file not found on disk",
+        raise catalog_error(
+            "export_failed",
             status_code=404,
+            reason="Generated document file not found on disk",
         )
 
     return FileResponse(

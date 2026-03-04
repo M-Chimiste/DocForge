@@ -9,7 +9,7 @@ from docx import Document
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse
 
-from api.errors import DocForgeError
+from api.errors import DocForgeError, catalog_error
 from api.schemas import RegenerateSectionRequest, RegenerateSectionResponse
 from core.docx_to_editor import DocxToEditorConverter
 from core.editor_models import EditorDocument
@@ -36,11 +36,7 @@ SYSTEM_PROMPT = (
 def _get_run(session, run_id: int) -> GenerationRun:
     run = session.query(GenerationRun).filter(GenerationRun.id == run_id).first()
     if not run:
-        raise DocForgeError(
-            error="not_found",
-            message=f"Generation run {run_id} not found",
-            status_code=404,
-        )
+        raise catalog_error("generation_not_found", status_code=404, run_id=run_id)
     return run
 
 
@@ -137,22 +133,14 @@ async def regenerate_section(
         run = _get_run(session, run_id)
         project = session.query(Project).filter(Project.id == run.project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message="Project not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=run.project_id)
 
         # Resolve LLM config
         project_llm = project.llm_config or {}
         llm_config = resolve_llm_config(settings, project_llm or None)
 
         if not llm_config.is_configured:
-            raise DocForgeError(
-                error="llm_not_configured",
-                message="No LLM configured for this project",
-                status_code=400,
-            )
+            raise catalog_error("llm_not_configured")
 
         # Find the marker in analysis
         analysis = TemplateAnalysis(**run.analysis_snapshot) if run.analysis_snapshot else None
@@ -241,11 +229,7 @@ async def export_document(run_id: int, request: Request) -> FileResponse:
 
         template_path = project.template_path if project else None
         if not template_path or not Path(template_path).exists():
-            raise DocForgeError(
-                error="template_missing",
-                message="Original template not found for export",
-                status_code=400,
-            )
+            raise catalog_error("template_not_found", path=template_path or "<none>")
 
         converter = EditorToDocxConverter(editor_doc, Path(template_path))
         doc = converter.convert()

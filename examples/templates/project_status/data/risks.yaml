@@ -1,0 +1,20 @@
+- risk_id: R-001
+  description: Resource availability due to concurrent projects
+  severity: High
+  mitigation: Cross-train team members and identify backup resources
+- risk_id: R-002
+  description: Third-party API integration delays
+  severity: Medium
+  mitigation: Build mock services for parallel development
+- risk_id: R-003
+  description: Scope creep from stakeholder requests
+  severity: High
+  mitigation: Enforce change control process and sprint boundaries
+- risk_id: R-004
+  description: Performance degradation under load
+  severity: Medium
+  mitigation: Schedule load testing in Sprint 6
+- risk_id: R-005
+  description: Key team member leaving the project
+  severity: Low
+  mitigation: Document knowledge and maintain updated onboarding guide

@@ -38,4 +38,4 @@ async def test_get_project(api_client):
 async def test_get_project_not_found(api_client):
     resp = await api_client.get("/api/v1/projects/9999")
     assert resp.status_code == 404
-    assert resp.json()["error"] == "not_found"
+    assert resp.json()["error"] == "project_not_found"

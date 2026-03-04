@@ -16,14 +16,16 @@ import {
   TableChart,
   AddBox,
   IndeterminateCheckBox,
+  Keyboard,
 } from "@mui/icons-material";
 import type { Editor } from "@tiptap/react";
 
 interface Props {
   editor: Editor | null;
+  onShowShortcuts?: () => void;
 }
 
-export default function EditorToolbar({ editor }: Props) {
+export default function EditorToolbar({ editor, onShowShortcuts }: Props) {
   if (!editor) return null;
 
   return (
@@ -43,6 +45,7 @@ export default function EditorToolbar({ editor }: Props) {
       {/* Heading level */}
       <Select
         size="small"
+        aria-label="Text style"
         value={
           editor.isActive("heading", { level: 1 })
             ? "1"
@@ -78,6 +81,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Bold">
         <IconButton
           size="small"
+          aria-label="Bold"
           onClick={() => editor.chain().focus().toggleBold().run()}
           color={editor.isActive("bold") ? "primary" : "default"}
         >
@@ -87,6 +91,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Italic">
         <IconButton
           size="small"
+          aria-label="Italic"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           color={editor.isActive("italic") ? "primary" : "default"}
         >
@@ -96,6 +101,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Underline">
         <IconButton
           size="small"
+          aria-label="Underline"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           color={editor.isActive("underline") ? "primary" : "default"}
         >
@@ -109,6 +115,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Align Left">
         <IconButton
           size="small"
+          aria-label="Align left"
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           color={editor.isActive({ textAlign: "left" }) ? "primary" : "default"}
         >
@@ -118,6 +125,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Align Center">
         <IconButton
           size="small"
+          aria-label="Align center"
           onClick={() => editor.chain().focus().setTextAlign("center").run()}
           color={
             editor.isActive({ textAlign: "center" }) ? "primary" : "default"
@@ -129,6 +137,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Align Right">
         <IconButton
           size="small"
+          aria-label="Align right"
           onClick={() => editor.chain().focus().setTextAlign("right").run()}
           color={
             editor.isActive({ textAlign: "right" }) ? "primary" : "default"
@@ -144,6 +153,7 @@ export default function EditorToolbar({ editor }: Props) {
       <Tooltip title="Insert Table">
         <IconButton
           size="small"
+          aria-label="Insert table"
           onClick={() =>
             editor
               .chain()
@@ -160,6 +170,7 @@ export default function EditorToolbar({ editor }: Props) {
           <Tooltip title="Add Row">
             <IconButton
               size="small"
+              aria-label="Add row"
               onClick={() => editor.chain().focus().addRowAfter().run()}
             >
               <AddBox fontSize="small" />
@@ -168,6 +179,7 @@ export default function EditorToolbar({ editor }: Props) {
           <Tooltip title="Delete Row">
             <IconButton
               size="small"
+              aria-label="Delete row"
               onClick={() => editor.chain().focus().deleteRow().run()}
             >
               <IndeterminateCheckBox fontSize="small" />
@@ -175,6 +187,15 @@ export default function EditorToolbar({ editor }: Props) {
           </Tooltip>
         </>
       )}
+
+      {/* Spacer pushes the shortcuts button to the right */}
+      <Box sx={{ flex: 1 }} />
+
+      <Tooltip title="Keyboard Shortcuts">
+        <IconButton size="small" aria-label="Keyboard shortcuts" onClick={onShowShortcuts}>
+          <Keyboard />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 }

@@ -3,6 +3,7 @@ import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import type { TemplateAnalysis } from "../types";
 import { analyzeTemplate } from "../api/client";
+import HelpTooltip from "./HelpTooltip";
 
 interface TemplateUploadProps {
   onAnalyzed: (analysis: TemplateAnalysis, file: File) => void;
@@ -50,6 +51,8 @@ export default function TemplateUpload({ onAnalyzed }: TemplateUploadProps) {
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
+      role="region"
+      aria-label="Template upload dropzone"
       sx={{
         border: "2px dashed",
         borderColor: dragOver ? "primary.main" : "grey.400",
@@ -60,28 +63,34 @@ export default function TemplateUpload({ onAnalyzed }: TemplateUploadProps) {
         transition: "all 0.2s",
       }}
     >
-      {loading ? (
-        <CircularProgress />
-      ) : (
-        <>
-          <CloudUploadIcon sx={{ fontSize: 48, color: "grey.500", mb: 1 }} />
-          <Typography variant="body1" gutterBottom>
-            Drag & drop a .docx template here
-          </Typography>
-          <Button variant="contained" component="label">
-            Browse Files
-            <input
-              type="file"
-              hidden
-              accept=".docx"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFile(file);
-              }}
-            />
-          </Button>
-        </>
-      )}
+      <Box aria-live="polite">
+        {loading ? (
+          <CircularProgress aria-label="Analyzing template" />
+        ) : (
+          <>
+            <CloudUploadIcon sx={{ fontSize: 48, color: "grey.500", mb: 1 }} aria-hidden="true" />
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+              <Typography variant="body1" gutterBottom>
+                Drag & drop a .docx template here
+              </Typography>
+              <HelpTooltip title="Upload a .docx template. Use red-formatted text (#FF0000) as markers for content that should be filled in automatically." />
+            </Box>
+            <Button variant="contained" component="label">
+              Browse Files
+              <input
+                type="file"
+                hidden
+                accept=".docx"
+                aria-label="Select a .docx template file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFile(file);
+                }}
+              />
+            </Button>
+          </>
+        )}
+      </Box>
     </Box>
   );
 }

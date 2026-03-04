@@ -1,0 +1,6 @@
+Finding ID,Severity,Description,Affected Control
+F-001,Critical,MFA not enforced for administrative accounts,AC-03
+F-002,High,No documented incident escalation matrix,IR-02
+F-003,Medium,Change management approvals missing for 3 of 20 sampled changes,CM-02
+F-004,Medium,Audit log retention set to 90 days instead of required 365 days,AU-02
+F-005,Low,Access review documentation lacks reviewer signatures,AC-02

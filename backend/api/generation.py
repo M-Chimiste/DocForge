@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Request
 
-from api.errors import DocForgeError
+from api.errors import catalog_error
 from api.schemas import (
     GenerateRequest,
     GenerateResponse,
@@ -30,25 +30,13 @@ async def generate_document(
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Project {project_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=project_id)
         if not project.template_path:
-            raise DocForgeError(
-                error="no_template",
-                message="No template associated with this project",
-                status_code=400,
-            )
+            raise catalog_error("template_missing")
         template_path = Path(project.template_path)
 
     if not template_path.exists():
-        raise DocForgeError(
-            error="template_missing",
-            message="Template file not found on disk",
-            status_code=400,
-        )
+        raise catalog_error("template_not_found", path=str(template_path))
 
     # Collect data source paths
     project_data_dir = settings.upload_dir / str(project_id) / "data"

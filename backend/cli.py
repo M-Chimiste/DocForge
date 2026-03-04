@@ -64,5 +64,16 @@ def generate(template: str, data: tuple, mapping: str, output: str):
         click.echo(f"  {len(report.errors)} error(s)")
 
 
+@main.command()
+@click.option("--host", default="0.0.0.0", help="Host to bind to")
+@click.option("--port", default=8000, type=int, help="Port to listen on")
+@click.option("--reload", is_flag=True, help="Enable auto-reload for development")
+def serve(host, port, reload):
+    """Start the DocForge web server."""
+    import uvicorn
+
+    uvicorn.run("main:app", host=host, port=port, reload=reload)
+
+
 if __name__ == "__main__":
     main()

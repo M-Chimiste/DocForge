@@ -30,10 +30,11 @@ export default function EditorBottomBar({
         bgcolor: "background.paper",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }} aria-live="polite">
         {hasUnsavedChanges && (
           <Chip label="Unsaved changes" size="small" color="warning" />
         )}
+        {saving && <span className="sr-only">Saving document...</span>}
       </Box>
       <Box sx={{ display: "flex", gap: 1 }}>
         <Button

@@ -1,7 +1,7 @@
 # DocForge — Product Requirements Document
 
 **Project Name:** DocForge
-**Author:** Christian (Theseus Research)
+**Author:** Christian Merrill (Theseus Research)
 **Version:** 1.0
 **Date:** March 3, 2026
 **Status:** Approved

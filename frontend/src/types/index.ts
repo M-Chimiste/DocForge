@@ -162,6 +162,9 @@ export interface DataPreview {
       columns: string[];
       rows: unknown[][];
       totalRows: number;
+      page: number;
+      pageSize: number;
+      totalPages: number;
     }
   >;
   textSnippet?: string | null;

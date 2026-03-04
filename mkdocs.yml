@@ -1,0 +1,60 @@
+site_name: DocForge
+site_description: Template-driven document generation engine
+site_url: https://docforge.readthedocs.io
+repo_url: https://github.com/m-chimiste/docforge
+repo_name: m-chimiste/docforge
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: blue
+      accent: indigo
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quickstart: quickstart.md
+  - User Guide:
+    - Templates: user-guide/templates.md
+    - Data Sources: user-guide/data-sources.md
+    - Mapping: user-guide/mapping.md
+    - Generation: user-guide/generation.md
+    - Editor: user-guide/editor.md
+    - LLM Configuration: user-guide/llm-config.md
+  - API Reference:
+    - Overview: api/overview.md
+    - Projects: api/projects.md
+    - Templates: api/templates.md
+    - Data Sources: api/data-sources.md
+    - Generation: api/generation.md
+    - Editor: api/editor.md
+  - Plugin Development:
+    - Overview: plugins/overview.md
+    - Custom Renderers: plugins/developing-renderers.md
+    - Custom Extractors: plugins/developing-extractors.md
+    - Custom Transforms: plugins/developing-transforms.md
+    - Distribution: plugins/distributing.md
+  - Contributing:
+    - Architecture: contributing/architecture.md
+    - Development: contributing/development.md
+    - Code Conventions: contributing/code-conventions.md
+  - Troubleshooting: troubleshooting.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - toc:
+      permalink: true

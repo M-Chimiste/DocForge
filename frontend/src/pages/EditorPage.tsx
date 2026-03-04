@@ -14,6 +14,8 @@ import EditorBottomBar from "../components/editor/EditorBottomBar";
 import MarkerDetailsPanel, {
   type MarkerMeta,
 } from "../components/editor/MarkerDetailsPanel";
+import KeyboardShortcutsDialog from "../components/KeyboardShortcutsDialog";
+import useKeyboardShortcuts from "../hooks/useKeyboardShortcuts";
 import {
   getEditorDocument,
   saveEditorDocument,
@@ -35,6 +37,9 @@ export default function EditorPage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  // Keyboard shortcuts dialog state
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   // Regenerate dialog state
   const [regenOpen, setRegenOpen] = useState(false);
@@ -353,6 +358,50 @@ export default function EditorPage() {
     }
   }, [numRunId, hasUnsavedChanges, editor, docData]);
 
+  // Helper: get currently active marker ID from editor selection
+  const getActiveMarkerId = useCallback((): string | null => {
+    if (!editor) return null;
+    const { $from } = editor.state.selection;
+    const marks = $from.marks();
+    for (const mark of marks) {
+      if (mark.type.name === "docforgeRendered" && mark.attrs.markerId) {
+        return mark.attrs.markerId;
+      }
+    }
+    return null;
+  }, [editor]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts(
+    useMemo(
+      () => ({
+        onSave: handleSave,
+        onExport: handleExport,
+        onAccept: () => {
+          const id = getActiveMarkerId();
+          if (id) handleAccept(id);
+        },
+        onReject: () => {
+          const id = getActiveMarkerId();
+          if (id) handleReject(id);
+        },
+        onRegenerate: () => {
+          const id = getActiveMarkerId();
+          if (id) handleRegenerateOpen(id);
+        },
+        onShowHelp: () => setShortcutsOpen(true),
+      }),
+      [
+        handleSave,
+        handleExport,
+        handleAccept,
+        handleReject,
+        handleRegenerateOpen,
+        getActiveMarkerId,
+      ]
+    )
+  );
+
   if (loading) {
     return (
       <Box
@@ -383,6 +432,8 @@ export default function EditorPage() {
         {/* Left panel: Section tree */}
         <Paper
           variant="outlined"
+          component="nav"
+          aria-label="Document sections"
           sx={{
             width: 280,
             flexShrink: 0,
@@ -398,7 +449,10 @@ export default function EditorPage() {
 
         {/* Center: Editor */}
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <EditorToolbar editor={editor} />
+          <EditorToolbar
+            editor={editor}
+            onShowShortcuts={() => setShortcutsOpen(true)}
+          />
           <Box
             sx={{
               flex: 1,
@@ -434,6 +488,8 @@ export default function EditorPage() {
         {/* Right panel: Marker details */}
         <Paper
           variant="outlined"
+          component="aside"
+          aria-label="Marker details"
           sx={{
             width: 320,
             flexShrink: 0,
@@ -461,6 +517,12 @@ export default function EditorPage() {
         originalPrompt={regenPrompt}
         onClose={() => setRegenOpen(false)}
         onRegenerate={handleRegenerate}
+      />
+
+      {/* Keyboard shortcuts dialog */}
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
       />
     </Box>
   );

@@ -2,7 +2,7 @@ import shutil
 
 from fastapi import APIRouter, File, Request, UploadFile
 
-from api.errors import DocForgeError
+from api.errors import catalog_error
 from db.models import Project
 
 router = APIRouter(prefix="/projects/{project_id}/data-sources", tags=["data-sources"])
@@ -20,11 +20,7 @@ async def upload_data_source(
     with session_factory() as session:
         project = session.query(Project).filter(Project.id == project_id).first()
         if not project:
-            raise DocForgeError(
-                error="not_found",
-                message=f"Project {project_id} not found",
-                status_code=404,
-            )
+            raise catalog_error("project_not_found", status_code=404, project_id=project_id)
 
     # Save to project-scoped directory
     project_upload_dir = settings.upload_dir / str(project_id) / "data"

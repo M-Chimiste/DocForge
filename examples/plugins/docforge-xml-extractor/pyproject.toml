@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docforge-xml-extractor"
+version = "0.1.0"
+description = "DocForge plugin: extracts data from XML files into DataFrames."
+requires-python = ">=3.12"
+dependencies = [
+    "docforge",
+]
+
+[project.entry-points."docforge.extractors"]
+xml = "docforge_xml_extractor.extractor:XmlExtractor"
