@@ -81,10 +81,25 @@ class ConditionalConfig(BaseModel):
     include: bool = True
 
 
+class ContextScope(str, Enum):
+    SECTION = "section"
+    DOCUMENT = "document"
+    CUSTOM = "custom"
+
+
+class ResolvedContext(BaseModel):
+    scope: ContextScope
+    broadening_signals: list[str] = []
+    included_sources: list[str] = []
+    context_text: str = ""
+    section_id: str | None = None
+
+
 class RenderResult(BaseModel):
     marker_id: str
     success: bool
     error: str | None = None
+    llm_usage: dict[str, Any] | None = None
 
 
 class AutoResolutionMatch(BaseModel):

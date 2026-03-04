@@ -21,6 +21,8 @@ dependencies = [
     "markitdown[pdf,pptx,docx]>=0.1.5",
     "pyyaml>=6.0.0",
     "thefuzz[speedup]>=0.22.0",
+    "litellm>=1.40.0",
+    "sse-starlette>=2.0.0",
 ]
 
 [project.optional-dependencies]

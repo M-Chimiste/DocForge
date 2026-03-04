@@ -119,6 +119,53 @@ class DataPreviewResponse(BaseModel):
     text_snippet: str | None = Field(default=None, serialization_alias="textSnippet")
 
 
+class LLMConfigResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    provider: str
+    model: str
+    endpoint: str | None = None
+    api_key_configured: bool = Field(serialization_alias="apiKeyConfigured")
+    temperature: float
+    max_tokens: int = Field(serialization_alias="maxTokens")
+
+
+class LLMConfigUpdate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    provider: str | None = None
+    model: str | None = None
+    endpoint: str | None = None
+    api_key_env: str | None = Field(default=None, alias="apiKeyEnv")
+    temperature: float | None = None
+    max_tokens: int | None = Field(default=None, alias="maxTokens")
+
+
+class LLMTestResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    success: bool
+    message: str
+
+
+class LLMExtractionFieldRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    name: str
+    type: str = "string"
+    description: str = ""
+
+
+class LLMExtractionRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    fields: list[LLMExtractionFieldRequest]
+
+
+class LLMExtractionResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    columns: list[str]
+    rows: list[dict[str, Any]]
+    validation_errors: list[str] = Field(default=[], serialization_alias="validationErrors")
+    llm_model: str = Field(serialization_alias="llmModel")
+    tokens_used: int = Field(serialization_alias="tokensUsed")
+
+
 class ErrorResponse(BaseModel):
     error: str
     message: str

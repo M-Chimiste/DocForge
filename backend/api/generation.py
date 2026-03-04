@@ -11,6 +11,7 @@ from api.schemas import (
     ValidationIssueResponse,
 )
 from core.engine import GenerationEngine
+from core.llm_client import resolve_llm_config
 from core.models import ConditionalConfig, MappingEntry, TransformConfig, TransformType
 from db.models import GenerationRun, Project
 
@@ -86,12 +87,18 @@ async def generate_document(
         else None
     )
 
+    # Resolve LLM config
+    with session_factory() as session:
+        project = session.query(Project).filter(Project.id == project_id).first()
+        project_llm = project.llm_config if project else {}
+    llm_config = resolve_llm_config(settings, project_llm or None)
+
     # Generate
     output_dir = settings.output_dir / str(project_id)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"output_{uuid.uuid4().hex[:8]}.docx"
 
-    engine = GenerationEngine()
+    engine = GenerationEngine(llm_config=llm_config)
     report = engine.generate(template_path, data_paths, mappings, output_path, conditionals)
 
     # Record generation run in database

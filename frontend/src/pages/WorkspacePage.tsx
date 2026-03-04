@@ -30,6 +30,7 @@ import MappingPanel from "../components/MappingPanel";
 import GenerateButton from "../components/GenerateButton";
 import DataPreviewPanel from "../components/DataPreviewPanel";
 import ValidationDisplay from "../components/ValidationDisplay";
+import LLMSettingsPanel from "../components/LLMSettingsPanel";
 
 export default function WorkspacePage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -77,6 +78,9 @@ export default function WorkspacePage() {
       (tm) => !mappings.some((m) => m.markerId === tm.markerId)
     ),
   ];
+
+  const hasLLMMarkers =
+    analysis?.markers.some((m) => m.marker_type === "llm_prompt") ?? false;
 
   return (
     <Container maxWidth="xl">
@@ -163,10 +167,13 @@ export default function WorkspacePage() {
 
       <Divider sx={{ my: 3 }} />
 
+      <LLMSettingsPanel projectId={id} hasLLMMarkers={hasLLMMarkers} />
+
       <GenerateButton
         projectId={id}
         mappings={allMappings}
         disabled={!analysis || mappings.length === 0}
+        hasLLMMarkers={hasLLMMarkers}
       />
     </Container>
   );

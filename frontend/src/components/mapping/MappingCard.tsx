@@ -18,6 +18,7 @@ import type {
   TransformConfig,
 } from "../../types";
 import ConfidenceIndicator from "./ConfidenceIndicator";
+import ContextScopeIndicator from "./ContextScopeIndicator";
 import TransformPanel from "./TransformPanel";
 
 interface Props {
@@ -60,6 +61,9 @@ export default function MappingCard({
           <Typography variant="caption" color="text.secondary">
             ({marker.marker_type.replace("_", " ")})
           </Typography>
+          {marker.marker_type === "llm_prompt" && (
+            <ContextScopeIndicator markerText={marker.text} />
+          )}
         </Box>
         {mapping && (
           <IconButton size="small" onClick={onRemove}>

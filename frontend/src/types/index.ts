@@ -115,6 +115,44 @@ export interface GenerationRun {
   createdAt: string;
 }
 
+// LLM Configuration
+export interface LLMConfig {
+  provider: string;
+  model: string;
+  endpoint?: string | null;
+  apiKeyConfigured: boolean;
+  temperature: number;
+  maxTokens: number;
+}
+
+export interface LLMConfigUpdate {
+  provider?: string;
+  model?: string;
+  endpoint?: string | null;
+  apiKeyEnv?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface LLMTestResult {
+  success: boolean;
+  message: string;
+}
+
+// Generation Progress (SSE)
+export interface GenerationProgress {
+  stage: "parsing" | "ingestion" | "rendering" | "validation" | "complete";
+  status: string;
+  markerIndex?: number;
+  totalMarkers?: number;
+  markerId?: string;
+  markerText?: string;
+  tokens?: number;
+  sources?: number;
+  markers?: number;
+  error?: string;
+}
+
 export interface DataPreview {
   source: string;
   sheets: string[];

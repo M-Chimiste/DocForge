@@ -10,6 +10,9 @@ import type {
   ValidationIssue,
   GenerationRun,
   DataPreview,
+  LLMConfig,
+  LLMConfigUpdate,
+  LLMTestResult,
 } from "../types";
 
 const api = axios.create({
@@ -161,4 +164,45 @@ export async function importProject(file: File): Promise<Project> {
   form.append("file", file);
   const { data } = await api.post<Project>("/projects/import", form);
   return data;
+}
+
+// LLM Configuration
+export async function getGlobalLLMConfig(): Promise<LLMConfig> {
+  const { data } = await api.get<LLMConfig>("/llm/config");
+  return data;
+}
+
+export async function getProjectLLMConfig(
+  projectId: number
+): Promise<LLMConfig> {
+  const { data } = await api.get<LLMConfig>(
+    `/projects/${projectId}/llm-config`
+  );
+  return data;
+}
+
+export async function updateProjectLLMConfig(
+  projectId: number,
+  config: LLMConfigUpdate
+): Promise<LLMConfig> {
+  const { data } = await api.put<LLMConfig>(
+    `/projects/${projectId}/llm-config`,
+    config
+  );
+  return data;
+}
+
+export async function testLLMConnection(
+  projectId?: number
+): Promise<LLMTestResult> {
+  const url = projectId
+    ? `/projects/${projectId}/llm-test`
+    : "/llm/test";
+  const { data } = await api.post<LLMTestResult>(url);
+  return data;
+}
+
+// Streaming generation URL helper
+export function getGenerateStreamUrl(projectId: number): string {
+  return `/api/v1/projects/${projectId}/generate-stream`;
 }
